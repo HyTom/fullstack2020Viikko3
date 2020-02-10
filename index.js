@@ -1,7 +1,9 @@
 require('dotenv').config()
+const Person = require('./models/person')
+
 const express = require('express')
 const app = express()
-const Person = require('./models/person')
+
 const morgan = require('morgan')
 
 const cors = require('cors')
@@ -10,55 +12,59 @@ app.use(express.static('build'))
 app.use(cors()) 
 app.use(express.json(), morgan('tiny')) 
 
-// let persons = [
-//     {
-//       "name": "Arto Hellas",
-//       "number": "040-123456",
-//       "id": 1
-//     },
-//     {
-//       "name": "Ada Lovelace",
-//       "number": "39-44-5323523",
-//       "id": 2
-//     },
-//     {
-//       "name": "Dan Abramov",
-//       "number": "12-43-234345",
-//       "id": 3
-//     },
-//     {
-//       "name": "Mary Poppendieck",
-//       "number": "39-23-6423122",
-//       "id": 4
-//     },
-//     {
-//       "name": "lol ",
-//       "number": "joo",
-//       "id": 7
-//     },
-//     {
-//       "name": "hahaajoo",
-//       "number": "joo",
-//       "id": 8
-//     }
-//   ]
+let persons = [
+    {
+      "name": "Arto Hellas",
+      "number": "040-123456",
+      "id": 1
+    },
+    {
+      "name": "Ada Lovelace",
+      "number": "39-44-5323523",
+      "id": 2
+    },
+    {
+      "name": "Dan Abramov",
+      "number": "12-43-234345",
+      "id": 3
+    },
+    {
+      "name": "Mary Poppendieck",
+      "number": "39-23-6423122",
+      "id": 4
+    },
+    {
+      "name": "lol ",
+      "number": "joo",
+      "id": 7
+    },
+    {
+      "name": "hahaajoo",
+      "number": "joo",
+      "id": 8
+    }
+  ]
 
   app.get('/', (req, res) => {
     res.send('<h1>Hello World!</h1>')
   })
   
-  app.get('/api/persons', (request, response) => {
+  app.get('/api/notes', (request, response) => {
     Person.find({}).then(persons => {
-      console.log(persons)
-      response.json(persons.map(person => person.toJSON()))
-    })
-  })
+      res.json(persons.map(person => person.toJSON()))
+    });
+  });
 
-  app.get('/api/persons/:id', (request, response) => {
-    Person.findById(request.params.id).then(person => {
-      response.json(person.toJSON())
-    })
-  })
+  app.get('/api/persons/:id', (req, res) => {
+    const id = Number(req.params.id)
+    const person = persons.find(person => person.id === id)
+
+    if (person) {
+      res.json(person)  
+    } else {
+      res.status(404).end()
+    }
+})
 
 app.delete('/api/persons/:id', (req, res) => {
   const id = Number(req.params.id)
@@ -74,22 +80,14 @@ const generateId = () => {
   return maxId * Math.random(100)
 }
 
-app.post('/api/persons', (request, response) => {
-  const body = request.body
+app.post('/api/persons', (req, res) => {
+  const body = req.body
 
-  if (body.content === undefined) {
-    return response.status(400).json({ error: 'content missing' })
+  if (!body.name | !body.number) {
+    return res.status(400).json({ 
+      error: 'content missing' 
+    })
   }
-
-  const Person = new Person({
-    name : body.name,
-    number : body.number,
-  })
-
-  person.save().then(savedPerson => {
-    response.json(savedPerson.toJSON())
-  })
-
 
   const identical = persons.find(person => person.name === body.name)
   if (identical) {
@@ -116,9 +114,7 @@ app.post('/api/persons', (request, response) => {
     res.send('<p>JOOOOOOOOOOOOO</p>')
 })
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
-
-

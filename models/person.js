@@ -19,7 +19,6 @@ const personsSchema = new mongoose.Schema({
 
 personsSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    console.log(returnedObject.name, 'perkele')
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
     delete returnedObject.__v
